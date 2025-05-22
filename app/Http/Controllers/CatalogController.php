@@ -3,25 +3,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\Catalog\ProductHasOrdersException;
 use App\Http\Requests\ProductRequest;
 use App\Models\Catalog\Category;
 use App\Models\Catalog\Product;
-use App\Services\CatalogService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 class CatalogController extends Controller
 {
-    protected CatalogService $service;
-
-    public function __construct(CatalogService $service)
-    {
-        $this->service = $service;
-    }
-
     /**
      * Таблица товаров
      *
@@ -33,7 +23,7 @@ class CatalogController extends Controller
             $products = Product::with('category')->select(['id', 'category_id', 'name', 'price'])->get();
             return view('catalog', ['products' => $products]);
         } catch (\Throwable $e) {
-            return view('errors.catalog', ['exception' => $e]);
+            return view('errors.error', ['exception' => $e]);
         }
     }
 
@@ -48,10 +38,16 @@ class CatalogController extends Controller
             $categories = Category::select(['id', 'name'])->get();
             return view('card', ['product' => new Product(), 'categories' => $categories]);
         } catch (\Throwable $e) {
-            return view('errors.catalog', ['exception' => $e]);
+            return view('errors.error', ['exception' => $e]);
         }
     }
 
+    /**
+     * Создание товара
+     *
+     * @param ProductRequest $request
+     * @return View|RedirectResponse
+     */
     public function store(ProductRequest $request): View|RedirectResponse
     {
         try {
@@ -60,12 +56,12 @@ class CatalogController extends Controller
                 Product::create($request->validated())
             );
         } catch (\Throwable $e) {
-            return view('errors.catalog', ['exception' => $e]);
+            return view('errors.error', ['exception' => $e]);
         }
     }
 
     /**
-     * @param Request $request
+     * @param ProductRequest $request
      * @param Product $product
      * @return View|RedirectResponse
      */
@@ -75,7 +71,7 @@ class CatalogController extends Controller
             $product->update($request->validated());
             return response()->redirectToRoute('catalog.show', $product);
         } catch (\Throwable $e) {
-            return view('errors.catalog', ['exception' => $e]);
+            return view('errors.error', ['exception' => $e]);
         }
     }
 
@@ -88,10 +84,13 @@ class CatalogController extends Controller
     public function destroy(Product $product): View|RedirectResponse
     {
         try {
+            if ($product->has('orders')) {
+                throw new ProductHasOrdersException();
+            }
             $product->delete();
             return response()->redirectToRoute('catalog.index');
         } catch (\Throwable $e) {
-            return view('errors.catalog', ['exception' => $e]);
+            return view('errors.error', ['exception' => $e]);
         }
     }
 
@@ -107,7 +106,7 @@ class CatalogController extends Controller
             $categories = Category::select(['id', 'name'])->get();
             return view('card', ['product' => $product, 'categories' => $categories]);
         } catch (\Throwable $e) {
-            return view('errors.catalog', ['exception' => $e]);
+            return view('errors.error', ['exception' => $e]);
         }
     }
 }

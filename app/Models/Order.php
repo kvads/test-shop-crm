@@ -8,6 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Order extends Model
 {
+    const STATUSES = [
+        'new' => 'Новый',
+        'complete' => 'Выполнен'
+    ];
+
+    const COMPLETE_STATUS = 'complete';
+    const NEW_STATUS = 'new';
+
     protected $fillable = [
         'client_full_name',
         'status',
@@ -25,4 +33,14 @@ class Order extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    /**
+     * Аксессор для получения цены заказа
+     * @return float
+     */
+    public function getTotalPriceAttribute(): float
+    {
+        return $this->quantity * ($this->product?->price ?? 0);
+    }
+
 }

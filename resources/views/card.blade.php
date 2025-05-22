@@ -51,7 +51,7 @@
             <label class="block text-sm font-medium text-gray-700">Описание</label>
             <textarea name="description" rows="5"
                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">{{ old('description', $product->description) }}</textarea>
-            @error('category_id')
+            @error('description')
             <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
             @enderror
         </div>
