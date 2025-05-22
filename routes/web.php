@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CatalogController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+/** Каталог */
+Route::prefix('/')->group(static function () {
+    Route::get('/', [CatalogController::class, 'index'])->name('catalog.index');
+    Route::get('/create', [CatalogController::class, 'create'])->name('catalog.create');
+    Route::post('/', [CatalogController::class, 'store'])->name('catalog.store');
+    Route::prefix('/{product}')->group(static function () {
+        Route::get('/', [CatalogController::class, 'show'])->name('catalog.show');
+        Route::put('/', [CatalogController::class, 'update'])->name('catalog.update');
+        Route::delete('/', [CatalogController::class, 'destroy'])->name('catalog.destroy');
+    });
 });
+
+
+
